@@ -1,67 +1,40 @@
 import streamlit as st
 import time
-import ollama
 import random
 
-# Ponder the AI
-
-def generate_hard_question():
-    prompt = (
-        "You are a trivia bot."
-        "Ask a short and difficult trivia question."
-        "DO NOT provide the answer. Keep the question under 10 words."
-        "ONLY output the question text itself. No extra formatting."
-        )
-    response = ollama.chat(model="phi", messages=[
-        {"role": "user", "content": prompt}
-    ])
-    return response['message']['content']
-
-def check_answer(question, user_response):
-    prompt = (
-        "You are a trivia bot."
-        "Judge the answer strictly and concisely.\n\n"
-        f"Question: {question}\n"
-        f"Answer: {user_response}\n\n"
-        "Respond with ONLY ONE WORD:\n"
-        "- If the answer is correct, respond: right\n"
-        "- If the answer is clever or cheats the question, respond: cheat\n"
-        "- Otherwise, respond: wrong"
-        )
-    response = ollama.chat(model="phi", messages=[
-        {"role": "user", "content": prompt}
-    ])
-    return response['message']['content']
+from check_answer import check_answer
+from generate_hard_question import generate_hard_question
 
 
+# Heading Text & Image
 
-# APP INTERFACE BEGINS HERE
 
 st.set_page_config(page_title="Bridgekeeper", page_icon="🧙")
 st.image("assets/stop.jpg", use_container_width=True)
 st.title("The Bridge of Death")
 
-# Initialize session state
-if "step" not in st.session_state:
+
+# Adding the Functions
+
+
+def _setup_game(initial_chatlog):
     st.session_state.step = 0
     st.session_state.name = ""
     st.session_state.quest = ""
     st.session_state.colour = ""
     st.session_state.hard_q = None
     st.session_state.hard_a = None
+    st.session_state.ask_colour = random.choice([True, False])
     st.session_state.result = ""
-    st.session_state.chatlog = [
-        ("Bridgekeeper", "Stop! Who would cross the Bridge of Death must answer me these questions three, ere the other side he sees."),
-        ("You", "Ask me the questions, Bridgekeeper. I'm not afraid."),
-    ]
+    st.session_state.chatlog = initial_chatlog
     st.session_state.waiting_for_question = False
+    st.session_state.user_failed = False
+    st.session_state.bridgekeeper_failed = False
 
-for key in ["user_failed", "bridgekeeper_failed", "ask_colour", "total_survived", "total_fallen", "history"]:
-    if key not in st.session_state:
-        st.session_state[key] = False if "failed" in key else 0 if "total" in key else None if "ask" in key else []
-
-if "history" not in st.session_state:
-    st.session_state.history = []
+def restart_bridgekeeper():
+    for key in list(st.session_state.keys()):
+        del st.session_state[key]
+    st.rerun()
 
 def add_to_chat(speaker, message):
     st.session_state.chatlog.append((speaker, message))
@@ -74,29 +47,27 @@ def reset():
             "user_failed": st.session_state.get("user_failed", False),
             "bridgekeeper_failed": st.session_state.get("bridgekeeper_failed", False),
         })
-    st.session_state.step = 0
-    st.session_state.name = ""
-    st.session_state.quest = ""
-    st.session_state.colour = ""
-    st.session_state.hard_q = None
-    st.session_state.hard_a = None
-    st.session_state.result = ""
-    st.session_state.chatlog = [
-        ("Bridgekeeper", "Stop!"),
-    ]
-    st.session_state.waiting_for_question = False
-    st.session_state.ask_colour = False
-    st.session_state.user_failed = False
-    st.session_state.bridgekeeper_failed = False
+    _setup_game([("Bridgekeeper", "Stop!")])
 
-def restart_bridgekeeper():
-    for key in list(st.session_state.keys()):
-        del st.session_state[key]
-    st.rerun()
+
+# Initialise session state
+if "step" not in st.session_state:
+    _setup_game([
+        ("Bridgekeeper", "Stop! Who would cross the Bridge of Death must answer me these questions three, ere the other side he sees."),
+        ("You", "Ask me the questions, Bridgekeeper. I'm not afraid."),
+    ])
+
+for key in ["user_failed", "bridgekeeper_failed", "ask_colour", "total_survived", "total_fallen", "history"]:
+    if key not in st.session_state:
+        st.session_state[key] = False if "failed" in key else 0 if "total" in key else None if "ask" in key else []
 
 # Display chatlog
 for speaker, message in st.session_state.chatlog:
     st.markdown(f"**{speaker}:** {message}")
+
+
+# THE GAME STARTS HERE
+
 
 # Step 1: What is your name?
 if st.session_state.step == 0:
@@ -132,8 +103,6 @@ elif st.session_state.step == 1:
 
 # Step 3: Final question
 elif st.session_state.step == 2:
-    
-    st.session_state.ask_colour = random.choice([True, False])
     
     if st.session_state.ask_colour:
         # Easy
@@ -199,7 +168,6 @@ elif st.session_state.step == 3:
         if st.button("Restart Game"):
             restart_bridgekeeper()
         st.stop()
-
 
 if st.session_state.history:
     st.markdown("---")

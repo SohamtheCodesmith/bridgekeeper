@@ -10,7 +10,15 @@ A Monty Python-inspired AI-powered trivia game built with Streamlit.
 - Randomised outcomes based on answers
 - Animated GIFs for user and Bridgekeeper deaths
 - Persistent session history of who survived and who perished
-- Hidden cheat codes 👀
+
+<p align="center">
+  <img src="assets/screenshot_1.png" width="45%"/>
+  <img src="assets/screenshot_2.png" width="45%"/>
+</p>
+<p align="center">
+  <img src="assets/screenshot_3.png" width="45%"/>
+  <img src="assets/screenshot_4.png" width="45%"/>
+</p>
 
 ## ⚙️ How to Run
 
@@ -18,7 +26,7 @@ Install dependencies:
 
 ```bash
 pip install -r requirements.txt
-````
+```
 
 Make sure [Ollama](https://ollama.com) is installed and running:
 
@@ -34,7 +42,6 @@ streamlit run app.py
 
 ## 🚧 Roadmap
 
-* Better question generation
-* AI-based explanation of failures
-* Multiplayer support
-* Flask+JS port
+- Improve AI question variety and humour balance
+- Add AI-generated explanations for wrong answers
+- Optional web-based version (Flask + JS) for wider hosting
