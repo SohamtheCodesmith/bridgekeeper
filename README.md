@@ -43,5 +43,6 @@ streamlit run app.py
 ## 🚧 Roadmap
 
 - Improve AI question variety and humour balance
-- Add AI-generated explanations for wrong answers
+- AI-generated response to the favourite colour question
 - Optional web-based version (Flask + JS) for wider hosting
+- Support for multiple AI models with in-app selection
